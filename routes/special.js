@@ -1,15 +1,19 @@
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
+const auth = require('../controllers/auth');
 
 const router = Router({prefix: '/api/home'});
 
-router.get('/api/home', welcomeAPI);
-app.use(router.routes());
+router.get('/', publicAPI);
+router.get('/private', auth, privateAPI);
 
-function welcomeAPI(ctx, next) {
-  ctx.body = {
-    message: "Welcome to the Book and Literature API!"
-  }
+function publicAPI(ctx) {  
+  ctx.body = {message: 'PUBLIC PAGE: You requested a new message URI (root) of the API'}
+}
+
+function privateAPI(ctx) {
+  const user = ctx.state.user;
+  ctx.body = {message: `Hello ${user.username} you registered on ${user.dateRegistered}`} 
 }
 
 module.exports = router;

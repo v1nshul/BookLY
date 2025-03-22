@@ -2,6 +2,9 @@ const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
 const router = Router({prefix: '/api/home/books'});
 
+const {validateBook} = require('../controllers/validation');
+
+
 let books = [
   {
     title:'sample book',
@@ -26,10 +29,9 @@ let books = [
   }
 ];
 router.get('/',getAll);
-router.post('/',bodyParser(), createBook);
-
+router.post('/',bodyParser(), validateBook, createBook);
 router.get('/:id([0-9]{1,})', getById);
-router.put('/:id([0-9]{1,})', updateBook);  
+router.put('/:id([0-9]{1,})', bodyParser(), validateBook, updateBook);  
 router.del('/:id([0-9]{1,})', deleteBook);  
 
 function getAll(cnx, next){  
