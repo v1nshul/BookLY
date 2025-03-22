@@ -1,88 +1,86 @@
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
-const router = Router({prefix: '/api/home/books'});
+const router = Router({ prefix: '/api/home/books' });
 
-const {validateBook} = require('../controllers/validation');
+const { validateBook } = require('../controllers/validation');
+const booksModel = require('../models/books'); // Import the model
 
-
-let books = [
-  {
-    title:'sample book',
-    fullText:'some text here to fill the body',
-    creationDate: new Date(),
-    editedDate: new Date(),
-    views: 0
-  },
-  {
-    title:'another book',
-    fullText:'again here is some text here to fill',
-    creationDate: new Date(),
-    editedDate: new Date(),
-    views: 0
-  },
-  {
-    title:'hmm ',
-    fullText:'some news about hmm',
-    creationDate: new Date(),
-    editedDate: new Date(),
-    views: 0
-  }
-];
-router.get('/',getAll);
-router.post('/',bodyParser(), validateBook, createBook);
+router.get('/', getAll);
+router.post('/', bodyParser(), validateBook, createBook);
 router.get('/:id([0-9]{1,})', getById);
-router.put('/:id([0-9]{1,})', bodyParser(), validateBook, updateBook);  
-router.del('/:id([0-9]{1,})', deleteBook);  
+router.put('/:id([0-9]{1,})', bodyParser(), validateBook, updateBook);
+router.del('/:id([0-9]{1,})', deleteBook);
 
-function getAll(cnx, next){  
-  // Use the response body to send the articles as JSON.
-  cnx.body = books;  
-}  
-
-function getById(cnx, next){
-  // Get the ID from the route parameters.
-  let id = cnx.params.id;  
-
-  // If it exists then return the article as JSON.
-  // Otherwise return a 404 Not Found status code
-  if ((id < books.length+1) && (id > 0)) {
-    cnx.body = books[id-1];
-  } else {
-    cnx.status = 404;
+async function getAll(ctx) {
+  const { page = 1, limit = 10, order = 'ID', direction = 'ASC' } = ctx.query;
+  try {
+    const books = await booksModel.getAll(page, limit, order, direction);
+    ctx.body = books;
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: err.message };
   }
 }
 
-function createBook(cnx, next) {
-  // The body parser gives us access to the request body on cnx.request.body.
-  // Use this to extract the title and fullText we were sent.
-  let {title, fullText} = cnx.request.body;
-  // In turn, define a new article for addition to the array.
-  let newBook = {title:title, fullText:fullText};
-  articles.push(newBook);
-  // Finally send back appropriate JSON and status code.
-  // Once we move to a DB store, the newArticle sent back will now have its ID.
-  cnx.status = 201;
-  cnx.body = newBook;
-}  
+async function getById(ctx) {
+  const id = parseInt(ctx.params.id);
+  try {
+    const book = await booksModel.getById(id);
+    if (book.length > 0) {
+      ctx.body = book[0];
+    } else {
+      ctx.status = 404;
+      ctx.body = { error: 'Book not found' };
+    }
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: err.message };
+  }
+}
 
-function updateBook(cnx, next){  
-  const id = cnx.params.id;
-  const body = cnx.request.body;
-  let {title, fullText} = body;
-  newValues = {title:title, fullText:fullText, editedDate:new Date()};
-  Object.assign(books[id - 1], newValues)  // merge new values into article
-  cnx.body = books[id - 1];
-}  
+async function createBook(ctx) {
+  const book = ctx.request.body;
+  try {
+    const result = await booksModel.add(book);
+    ctx.status = 201;
+    ctx.body = result;
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: err.message };
+  }
+}
 
-function deleteBook(cnx, next){  
-   
-  const id = cnx.params.id;
-  books = books.filter((item, index) => index !== id - 1);
-  cnx.status = 200
-}  
+async function updateBook(ctx) {
+  const id = parseInt(ctx.params.id);
+  const book = { ...ctx.request.body, ID: id };
+  try {
+    const result = await booksModel.update(book);
+    if (result.affectedRows > 0) {
+      ctx.body = { message: 'Book updated successfully' };
+    } else {
+      ctx.status = 404;
+      ctx.body = { error: 'Book not found' };
+    }
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: err.message };
+  }
+}
 
-// Finally, define the exported object when 'require'd from other scripts. 
+async function deleteBook(ctx) {
+  const id = parseInt(ctx.params.id);
+  try {
+    const result = await booksModel.delById(id);
+    if (result.affectedRows > 0) {
+      ctx.body = { message: 'Book deleted successfully' };
+    } else {
+      ctx.status = 404;
+      ctx.body = { error: 'Book not found' };
+    }
+  } catch (err) {
+    ctx.status = 500;
+    ctx.body = { error: err.message };
+  }
+}
+
 module.exports = router;
-
-
-
