@@ -5,22 +5,18 @@ const router = Router({ prefix: '/api/home/books' });
 const { validateBook } = require('../controllers/validation');
 const booksModel = require('../models/books'); // Import the model
 
-router.get('/', getAll);
-router.post('/', bodyParser(), validateBook, createBook);
-router.get('/:id([0-9]{1,})', getById);
-router.put('/:id([0-9]{1,})', bodyParser(), validateBook, updateBook);
-router.del('/:id([0-9]{1,})', deleteBook);
-
 async function getAll(ctx) {
-  const { page = 1, limit = 10, order = 'ID', direction = 'ASC' } = ctx.query;
   try {
-    const books = await booksModel.getAll(page, limit, order, direction);
-    ctx.body = books;
-  } catch (err) {
+    const books = await booksModel.getAll(); // Assuming booksModel.getAll() fetches books
+    ctx.status = 200;
+    ctx.body = { data: books };
+  } catch (error) {
+    console.error('Error fetching books:', error);
     ctx.status = 500;
-    ctx.body = { error: err.message };
+    ctx.body = { error: 'Error fetching books' };
   }
 }
+
 
 async function getById(ctx) {
   const id = parseInt(ctx.params.id);
@@ -83,4 +79,9 @@ async function deleteBook(ctx) {
   }
 }
 
+router.get('/', getAll);
+router.post('/', bodyParser(), validateBook, createBook);
+router.get('/:id([0-9]{1,})', getById);
+router.put('/:id([0-9]{1,})', bodyParser(), validateBook, updateBook);
+router.del('/:id([0-9]{1,})', deleteBook);
 module.exports = router;
