@@ -3,11 +3,11 @@ const bodyParser = require('koa-bodyparser');
 const router = Router({ prefix: '/api/home/books' });
 
 const { validateBook } = require('../controllers/validation');
-const booksModel = require('../models/books'); // Import the model
+const booksModel = require('../models/books');
 
 async function getAll(ctx) {
   try {
-    const books = await booksModel.getAll(); // Assuming booksModel.getAll() fetches books
+    const books = await booksModel.getAll(); 
     ctx.status = 200;
     ctx.body = { data: books };
   } catch (error) {
