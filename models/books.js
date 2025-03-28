@@ -6,35 +6,39 @@ exports.getById = async function getById (id) {
   const values = [id];
   const data = await db.run_query(query, values);
   return data;
-}
+};
 
-exports.getAll = async function getAll() {
+exports.getAllByUser = async function getAllByUser(userID) {
   try {
-    const query = "SELECT * FROM books;";
-    const data = await db.run_query(query); // No need for values since it's fetching all
+    const query = "SELECT * FROM books WHERE userID = ?;";
+    const data = await db.run_query(query, [userID]);
     return data;
   } catch (error) {
-    console.error("Error fetching all books:", error);
-    throw error; // Rethrow so the caller can handle it
+    console.error("Error fetching user's books:", error);
+    throw error;
   }
-}
+};
 
-exports.add = async function add (book) {
-  const query = "INSERT INTO books SET ?";
-  const data = await db.run_query(query, book);
+
+
+exports.add = async function add(book) {
+  const query = "INSERT INTO books (title, author, userID) VALUES (?, ?, ?)";
+  const values = [book.title, book.author, book.userID];
+  const data = await db.run_query(query, values);
   return data;
-}
+};
+
 
 exports.delById = async function delById (id) {
   const query = "DELETE FROM books WHERE ID = ?;";
   const values = [id];
   const data = await db.run_query(query, values);
   return data;
-}
+};
 
 exports.update = async function update (book) {
   const query = "UPDATE books SET ? WHERE ID = ?;";
   const values = [book, book.ID];
   const data = await db.run_query(query, values);
   return data;
-}
+};

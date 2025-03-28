@@ -1,7 +1,8 @@
-const mysql = require('promise-mysql');  
+const mysql = require('promise-mysql');
 const info = require('../config');
-const { v4: uuidv4 } = require('uuid');
-
+const {
+  v4: uuidv4
+} = require('uuid');
 exports.run_query = async function run_query(query, values) {
   try {
     const connection = await mysql.createConnection(info.config);
