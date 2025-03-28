@@ -38,8 +38,63 @@ async function createBook(ctx) {
   }
 }
 
-// Use auth middleware to protect these routes
+async function searchBooks(ctx) {
+  try {
+    const searchQuery = ctx.request.query.query || "";
+
+    if (!searchQuery) {  // Fix: should check searchQuery, not "query"
+      ctx.status = 400;
+      ctx.body = { error: "Search query is required" };
+      return;
+    }
+
+    console.log("Searching for books with query:", searchQuery);
+    const books = await booksModel.searchBooks(searchQuery);
+
+    ctx.status = 200;
+    ctx.body = { data: books };
+  } catch (error) {
+    console.error("Error searching books:", error);
+    ctx.status = 500;
+    ctx.body = { error: "Error searching books" };
+  }
+}
+
+async function addToMyList(ctx) {
+  try {
+    const { title, author } = ctx.request.body;
+    const userID = ctx.state.user.ID;
+
+    if (!title || !author) {
+      ctx.status = 400;
+      ctx.body = { error: "Title and author are required" };
+      return;
+    }
+
+    // Check if the book already exists for the user
+    const existingBooks = await booksModel.getUserBookByTitle(userID, title);
+
+    if (existingBooks.length > 0) {
+      ctx.status = 409; // 409 Conflict
+      ctx.body = { error: "Book already exists in your list" };
+      return;
+    }
+
+    // If not found, add book to user's personal list
+    const newBook = await booksModel.add({ title, author, userID });
+
+    ctx.status = 201;
+    ctx.body = newBook; // Return the added book
+  } catch (error) {
+    console.error("Error adding book to list:", error);
+    ctx.status = 500;
+    ctx.body = { error: "Error adding book" };
+  }
+}
+
+router.get('/search',auth,searchBooks);
 router.get("/", auth, getAll);
 router.post("/", auth, bodyParser(), validateBook, createBook);
+router.post("/add",auth,bodyParser(), addToMyList);
 
 module.exports = router;

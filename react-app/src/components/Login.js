@@ -8,42 +8,42 @@ const Login = ({ onLogin }) => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  const credentials = btoa(`${username}:${password}`);
 
-    const credentials = btoa(`${username}:${password}`);
+  try {
+    const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/private", {
+      method: "GET",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
 
-    try {
-      const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/private", {
-        method: "GET",
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+    if (response.ok) {
+      const data = await response.json();
+      sessionStorage.setItem("auth", credentials);
 
-      if (response.ok) {
-        const data = await response.json();
-        sessionStorage.setItem("auth", credentials);
+      // Fetch only books that the user has added
+      const booksResponse = await fetch(
+        "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books",
+        { headers: { Authorization: `Basic ${credentials}` } }
+      );
 
-        // Fetch books for the user immediately after login
-        const booksResponse = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books", {
-          headers: { Authorization: `Basic ${credentials}` },
-        });
+      const booksData = await booksResponse.json();
 
-        const booksData = await booksResponse.json();
+      onLogin({ username, auth: credentials, books: booksData.data });
 
-        onLogin({ username, auth: credentials, books: booksData.data });
-
-        navigate("/books");
-      } else {
-        setError("Invalid username or password");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError("Something went wrong. Try again.");
+      navigate("/books");
+    } else {
+      setError("Invalid username or password");
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    setError("Something went wrong. Try again.");
+  }
+};
 
   return (
     <div>
@@ -60,6 +60,7 @@ const Login = ({ onLogin }) => {
         </div>
         <button type="submit">Login</button>
       </form>
+      <p>Don't have an account? <button onClick={() => navigate("/register")}>Register</button></p>
     </div>
   );
 };
