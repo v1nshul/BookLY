@@ -22,7 +22,7 @@ const Login = ({ onLogin }) => {
     });
 
     if (response.ok) {
-      const data = await response.json();
+      await response.json();
       sessionStorage.setItem("auth", credentials);
 
       // Fetch only books that the user has added

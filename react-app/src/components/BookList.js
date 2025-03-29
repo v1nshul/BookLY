@@ -8,23 +8,19 @@ const BookList = ({ auth }) => {
   const [errorMessage, setErrorMessage] = useState(""); 
 
   useEffect(() => {
-  if (!auth) {
-    console.error("No authentication found!");
-    return;
-  }
+    if (!auth) {
+      console.error("No authentication found!");
+      return;
+    }
 
-  fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books", {
-    headers: { Authorization: `Basic ${auth}` },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("Books received from API:", data);
-      setBooks(data.data || []); 
+    fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books", {
+      headers: { Authorization: `Basic ${auth}` },
     })
-    .catch((err) => console.error("Error fetching books:", err));
+      .then((res) => res.json())
+      .then((data) => setBooks(data.data || []))
+      .catch((err) => console.error("Error fetching books:", err));
   }, [auth]);
 
-  // Search for books in the database
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
@@ -47,54 +43,88 @@ const BookList = ({ auth }) => {
   };
 
   const addBookFromSearch = async (book) => {
-  setErrorMessage("");
+    setErrorMessage("");
 
-  // Check if the book already exists in the user's list
-  const bookExists = books.some((b) => b.title === book.title && b.author === book.author);
-  if (bookExists) {
-    setErrorMessage("This book is already in your list!");
-    return; // Stop execution if book is already in the list
-  }
-
-  try {
-    const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${auth}`,
-      },
-      body: JSON.stringify({ title: book.title, author: book.author }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      if (data.message === "Book already in your list!") {
-        setErrorMessage("This book is already in your list!");
-      } else {
-        setBooks([...books, book]); // Only add if it's a new entry for the user
-      }
-    } else {
-      setErrorMessage("Error adding book: " + data.error);
+    const bookExists = books.some((b) => b.title === book.title && b.author === book.author);
+    if (bookExists) {
+      setErrorMessage("This book is already in your list!");
+      return;
     }
-  } catch (error) {
-    console.error("Error adding book:", error);
-    setErrorMessage("An error occurred while adding the book.");
-  }
-};
+
+    try {
+      const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Basic ${auth}`,
+        },
+        body: JSON.stringify({ title: book.title, author: book.author }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.message === "Book already in your list!") {
+          setErrorMessage("This book is already in your list!");
+        } else {
+          setBooks([...books, { ...book, id: data.bookID }]);
+        }
+      } else {
+        setErrorMessage("Error adding book: " + data.error);
+      }
+    } catch (error) {
+      console.error("Error adding book:", error);
+      setErrorMessage("An error occurred while adding the book.");
+    }
+  };
+
+  const handleDeleteBook = async (title, author) => {
+    try {
+      console.log("Authorization Header:", `Basic ${auth}`);  
+      
+      const response = await fetch(
+        "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/remove",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${auth}`, 
+          },
+          body: JSON.stringify({ title, author }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setBooks((prevBooks) => prevBooks.filter((book) => !(book.title === title && book.author === author)));
+        console.log('book removed');
+      } else {
+        console.error("Error deleting book:", data.error);
+      }
+    } catch (error) {
+      console.error("Error deleting book:", error);
+    }
+  };
+
+
+
 
   return (
     <div>
       <h2>Your Book List</h2>
       <ul>
         {books.length > 0 ? (
-          books.map((book, index) => <li key={index}>{book.title} by {book.author}</li>)
+          books.map((book) => (
+            <li key={book.id}>
+              {book.title} by {book.author}{" "}
+              <button onClick={() => handleDeleteBook(book.title, book.author)}>Remove</button>
+            </li>
+          ))
         ) : (
           <p>No books added yet.</p>
         )}
       </ul>
 
-      {/* Search Section */}
       <h3>Search for a Book</h3>
       <input
         type="text"
@@ -104,7 +134,6 @@ const BookList = ({ auth }) => {
       />
       <button onClick={handleSearch}>Search</button>
 
-      {/* Display Search Results */}
       {searchResults.length > 0 && (
         <div>
           <h3>Search Results</h3>
@@ -119,10 +148,8 @@ const BookList = ({ auth }) => {
         </div>
       )}
 
-      
       {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
 
-      {/* Add a New Book */}
       <h3>Add a New Book</h3>
       <form onSubmit={(e) => e.preventDefault()}>
         <input

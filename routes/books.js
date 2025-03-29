@@ -71,7 +71,6 @@ async function addToMyList(ctx) {
       return;
     }
 
-    // Check if the book already exists for the user
     const existingBooks = await booksModel.getUserBookByTitle(userID, title);
 
     if (existingBooks.length > 0) {
@@ -79,12 +78,10 @@ async function addToMyList(ctx) {
       ctx.body = { error: "Book already exists in your list" };
       return;
     }
-
-    // If not found, add book to user's personal list
     const newBook = await booksModel.add({ title, author, userID });
 
     ctx.status = 201;
-    ctx.body = newBook; // Return the added book
+    ctx.body = newBook; 
   } catch (error) {
     console.error("Error adding book to list:", error);
     ctx.status = 500;
@@ -92,9 +89,42 @@ async function addToMyList(ctx) {
   }
 }
 
+async function deleteBookFromList(ctx) {
+  try {
+    console.log('Authenticated user:', ctx.state.user);  
+
+    const { title, author } = ctx.request.body;
+    const userID = ctx.state.user.ID;  
+
+    if (!title || !author) {
+      ctx.status = 400;
+      ctx.body = { error: "Book title and author are required" };
+      return;
+    }
+
+    const result = await booksModel.delFromUserList(title, author, userID);
+
+    if (result.message === 'book not found') {
+      ctx.status = 404;
+      ctx.body = { error: 'Book not found' };
+      return;
+    }
+
+    ctx.status = 200;
+    ctx.body = { message: result.message }; 
+
+  } catch (error) {
+    console.error("Error deleting book from list:", error);
+    ctx.status = 500;
+    ctx.body = { error: "An error occurred while deleting the book from your list" };
+  }
+}
+
+
 router.get('/search',auth,searchBooks);
 router.get("/", auth, getAll);
 router.post("/", auth, bodyParser(), validateBook, createBook);
 router.post("/add",auth,bodyParser(), addToMyList);
+router.delete("/remove", auth, bodyParser(), deleteBookFromList); 
 
 module.exports = router;

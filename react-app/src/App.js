@@ -32,7 +32,7 @@ const App = () => {
   return (
     <Router>
       <div>
-        <h1>React SPA</h1>
+        <h1>BookLY</h1>
         
         {user ? (
           <>

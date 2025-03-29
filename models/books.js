@@ -54,21 +54,19 @@ exports.add = async function add(book) {
   const { title, author, userID } = book;
 
   try {
-    // Check if the book already exists
     let query = "SELECT id FROM books WHERE title = ? AND author = ?";
     let results = await db.run_query(query, [title, author]);
 
     let bookID;
     if (results.length > 0) {
-      bookID = results[0].id; // Use the existing book ID
+      bookID = results[0].id; 
     } else {
-      // Insert a new book if it doesn't exist
+      
       query = "INSERT INTO books (title, author) VALUES (?, ?)";
       const insertResult = await db.run_query(query, [title, author]);
       bookID = insertResult.insertId;
     }
 
-    // Check if the user already added this book
     query = "SELECT id FROM user_books WHERE userID = ? AND bookID = ?";
     results = await db.run_query(query, [userID, bookID]);
 
@@ -76,7 +74,6 @@ exports.add = async function add(book) {
       return { message: "Book already in your list!" }; 
     }
 
-    // Add book to user's personal list
     query = "INSERT INTO user_books (userID, bookID) VALUES (?, ?)";
     await db.run_query(query, [userID, bookID]);
 
@@ -84,6 +81,30 @@ exports.add = async function add(book) {
   } catch (error) {
     console.error("Error adding book:", error);
     throw error;
+  }
+};
+
+
+exports.delFromUserList = async function delFromUserList(title, author, userID) {
+  try {
+    
+    const query = 'SELECT id FROM books WHERE title = ? AND author = ?';
+    const bookResults = await db.run_query(query, [title, author]);
+
+    if (bookResults.length === 0) {
+      return { message: 'book not found' }; 
+    }
+
+    const bookID = bookResults[0].id; 
+
+    
+    const deleteQuery = 'DELETE FROM user_books WHERE bookID = ? AND userID = ?';
+    await db.run_query(deleteQuery, [bookID, userID]);
+
+    return { message: 'book deleted from your list' }; 
+  } catch (error) {
+    console.error('Error deleting book', error);
+    throw error; 
   }
 };
 
