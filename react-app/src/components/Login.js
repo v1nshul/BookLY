@@ -1,3 +1,4 @@
+// Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,59 +9,82 @@ const Login = ({ onLogin }) => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  const credentials = btoa(`${username}:${password}`);
+    e.preventDefault();
+    const credentials = btoa(`${username}:${password}`);
 
-  try {
-    const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/private", {
-      method: "GET",
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
+    try {
+      const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/private", {
+        method: "GET",
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
 
-    if (response.ok) {
-      await response.json();
-      sessionStorage.setItem("auth", credentials);
+      if (response.ok) {
+        await response.json();
+        sessionStorage.setItem("auth", credentials);
 
-      // Fetch only books that the user has added
-      const booksResponse = await fetch(
-        "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books",
-        { headers: { Authorization: `Basic ${credentials}` } }
-      );
+        const booksResponse = await fetch(
+          "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books",
+          { headers: { Authorization: `Basic ${credentials}` } }
+        );
 
-      const booksData = await booksResponse.json();
+        const booksData = await booksResponse.json();
 
-      onLogin({ username, auth: credentials, books: booksData.data });
-
-      navigate("/books");
-    } else {
-      setError("Invalid username or password");
+        onLogin({ username, auth: credentials, books: booksData.data });
+        navigate("/books");
+      } else {
+        setError("Invalid username or password");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Something went wrong. Try again.");
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    setError("Something went wrong. Try again.");
-  }
-};
+  };
 
   return (
-    <div>
-      <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username:</label>
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+    <div className="w-full max-w-md bg-light-card dark:bg-dark-card p-8 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Username</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-light-border dark:border-light-card rounded-md bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-        <div>
-          <label>Password:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-md bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-        <button type="submit">Login</button>
+        <button
+          type="submit"
+          className="w-full px-4 py-2 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-200 bg-transparent text-blue-500 rounded-md font-medium"
+        >
+          Login
+        </button>
       </form>
-      <p>Don't have an account? <button onClick={() => navigate("/register")}>Register</button></p>
+      <p className="mt-4 text-center text-sm">
+        Don't have an account?{' '}
+        <button
+          onClick={() => navigate("/register")}
+          className="text-blue-500 hover:underline font-medium"
+        >
+          Register
+        </button>
+      </p>
     </div>
   );
 };
