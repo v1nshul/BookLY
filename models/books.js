@@ -109,7 +109,6 @@ exports.delFromUserList = async function delFromUserList(title, author, userID) 
 };
 
 
-
 exports.delById = async function delById (id) {
   const query = "DELETE FROM books WHERE ID = ?;";
   const values = [id];

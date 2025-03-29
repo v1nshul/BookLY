@@ -1,4 +1,4 @@
-// BookList.js
+// components/BookList.js
 import React, { useEffect, useState } from "react";
 
 const BookList = ({ auth }) => {
@@ -7,6 +7,9 @@ const BookList = ({ auth }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [reviews, setReviews] = useState({}); // Store reviews by book ID
+  const [newReview, setNewReview] = useState({ rating: "", comment: "" }); // New review form state
+  const [selectedBookId, setSelectedBookId] = useState(null); // Track which book is being reviewed
 
   useEffect(() => {
     if (!auth) {
@@ -30,7 +33,6 @@ const BookList = ({ auth }) => {
         `https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/search?query=${searchQuery}`,
         { headers: { Authorization: `Basic ${auth}` } }
       );
-
       const data = await response.json();
       if (response.ok) {
         setSearchResults(data.data);
@@ -45,7 +47,6 @@ const BookList = ({ auth }) => {
 
   const addBookFromSearch = async (book) => {
     setErrorMessage("");
-
     const bookExists = books.some((b) => b.title === book.title && b.author === book.author);
     if (bookExists) {
       setErrorMessage("This book is already in your list!");
@@ -63,7 +64,6 @@ const BookList = ({ auth }) => {
       });
 
       const data = await response.json();
-
       if (response.ok) {
         if (data.message === "Book already in your list!") {
           setErrorMessage("This book is already in your list!");
@@ -105,6 +105,60 @@ const BookList = ({ auth }) => {
     }
   };
 
+  const fetchReviews = async (book_id) => {
+    try {
+      const response = await fetch(
+        `https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/reviews?book_id=${book_id}`,
+        { headers: { Authorization: `Basic ${auth}` } }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setReviews((prev) => ({ ...prev, [book_id]: data.data }));
+      } else {
+        console.error("Error fetching reviews:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const handleAddReview = async (book_id) => {
+    if (!newReview.rating) {
+      setErrorMessage("Rating is required");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/reviews",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${auth}`,
+          },
+          body: JSON.stringify({ book_id, ...newReview }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        setReviews((prev) => ({
+          ...prev,
+          [book_id]: [...(prev[book_id] || []), { book_id, rating: newReview.rating, comment: newReview.comment, created_at: new Date() }],
+        }));
+        setNewReview({ rating: "", comment: "" });
+        setSelectedBookId(null);
+        setErrorMessage("");
+      } else {
+        setErrorMessage("Error adding review: " + data.error);
+      }
+    } catch (error) {
+      console.error("Error adding review:", error);
+      setErrorMessage("An error occurred while adding the review.");
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -114,15 +168,66 @@ const BookList = ({ auth }) => {
             {books.map((book) => (
               <li
                 key={book.id}
-                className="flex justify-between items-center p-3 bg-light-card dark:bg-dark-card rounded-md shadow-sm"
+                className="p-3 bg-light-card dark:bg-dark-card rounded-md shadow-sm"
               >
-                <span>{book.title} by {book.author}</span>
+                <div className="flex justify-between items-center">
+                  <span>{book.title} by {book.author}</span>
+                  <button
+                    onClick={() => handleDeleteBook(book.title, book.author)}
+                    className="px-3 py-1 border border-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200 bg-transparent text-red-500 rounded-md text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
                 <button
-                  onClick={() => handleDeleteBook(book.title, book.author)}
-                  className="px-3 py-1 border border-red-500 hover:bg-red-500 hover:text-white transition-colors duration-200 bg-transparent text-red-500 rounded-md text-sm"
+                  onClick={() => {
+                    fetchReviews(book.id);
+                    setSelectedBookId(book.id === selectedBookId ? null : book.id);
+                  }}
+                  className="mt-2 text-blue-500 hover:underline text-sm"
                 >
-                  Remove
+                  {selectedBookId === book.id ? "Hide Reviews" : "Show Reviews"}
                 </button>
+                {selectedBookId === book.id && (
+                  <div className="mt-2">
+                    <div className="space-y-2">
+                      {reviews[book.id]?.length > 0 ? (
+                        reviews[book.id].map((review) => (
+                          <div key={review.id} className="p-2 bg-light-bg dark:bg-dark-bg rounded">
+                            <p>Rating: {review.rating}/5</p>
+                            {review.comment && <p>Comment: {review.comment}</p>}
+                            <p className="text-xs">Posted: {new Date(review.created_at).toLocaleString()}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-light-text dark:text-dark-text opacity-75">No reviews yet.</p>
+                      )}
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        placeholder="Rating (1-5)"
+                        value={newReview.rating}
+                        onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })}
+                        className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-md bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <textarea
+                        placeholder="Comment (optional)"
+                        value={newReview.comment}
+                        onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                        className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-md bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={() => handleAddReview(book.id)}
+                        className="w-full px-4 py-2 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-200 bg-transparent text-blue-500 rounded-md"
+                      >
+                        Add Review
+                      </button>
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>

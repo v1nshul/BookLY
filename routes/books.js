@@ -5,6 +5,7 @@ const router = Router({ prefix: "/api/home/books" });
 const auth = require("../middleware/auth"); // Import auth middleware ✅
 const { validateBook } = require("../controllers/validation");
 const booksModel = require("../models/books");
+const reviewsModel = require("../models/reviews");
 
 async function getAll(ctx) {
   try {
@@ -13,7 +14,7 @@ async function getAll(ctx) {
 
     const books = await booksModel.getAllByUser(userID);
     
-    console.log("Books fetched:", books); // Debugging line
+    console.log("Books fetched:", books); 
     ctx.status = 200;
     ctx.body = { data: books };
   } catch (error) {
@@ -120,11 +121,54 @@ async function deleteBookFromList(ctx) {
   }
 }
 
+async function addReview(ctx) {
+  const { book_id, rating, comment } = ctx.request.body;
+  const user_id = ctx.state.user.ID; // Get user ID from auth middleware
+
+  if (!book_id || !rating) {
+    ctx.status = 400;
+    ctx.body = { error: "Book ID and rating are required" };
+    return;
+  }
+
+  try {
+    const result = await reviewsModel.addReview({ book_id, user_id, rating, comment });
+    ctx.status = 201;
+    ctx.body = result;
+  } catch (error) {
+    console.error("Error adding review:", error);
+    ctx.status = 500;
+    ctx.body = { error: "Error adding review" };
+  }
+}
+
+async function getReviews(ctx) {
+  const { book_id } = ctx.request.query;
+
+  if (!book_id) {
+    ctx.status = 400;
+    ctx.body = { error: "Book ID is required" };
+    return;
+  }
+
+  try {
+    const reviews = await reviewsModel.getReviewsByBookId(book_id);
+    ctx.status = 200;
+    ctx.body = { data: reviews };
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    ctx.status = 500;
+    ctx.body = { error: "Error fetching reviews" };
+  }
+}
+
 
 router.get('/search',auth,searchBooks);
 router.get("/", auth, getAll);
 router.post("/", auth, bodyParser(), validateBook, createBook);
 router.post("/add",auth,bodyParser(), addToMyList);
 router.delete("/remove", auth, bodyParser(), deleteBookFromList); 
+router.post("/reviews", auth, bodyParser(), addReview);
+router.get("/reviews", auth, getReviews);
 
 module.exports = router;
