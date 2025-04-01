@@ -1,8 +1,8 @@
-const basicAuth = require("basic-auth"); // ✅ Import basic-auth
-const usersModel = require("../models/users"); // ✅ Ensure usersModel is correctly imported
+const basicAuth = require("basic-auth"); 
+const usersModel = require("../models/users"); 
 
 const auth = async (ctx, next) => {
-  const credentials = basicAuth(ctx.req); // ✅ Extract credentials
+  const credentials = basicAuth(ctx.req); 
 
   console.log("Received authentication request...");
   if (!credentials || !credentials.name) {

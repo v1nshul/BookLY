@@ -1,5 +1,6 @@
 const Koa = require('koa');
 const cors = require('@koa/cors');
+
 const app = new Koa();
 
 const special = require('./routes/special.js')
@@ -13,12 +14,11 @@ app.use(cors({
   allowHeaders: ['Content-Type', 'Authorization'] 
 }));
 
-// Add routes
 app.use(special.routes());
 app.use(books.routes()).use(books.allowedMethods());
 
 let port = process.env.PORT || 3000;
 
-// Start server
+
 app.listen(port);
 console.log(`API server running on port ${port}`);
