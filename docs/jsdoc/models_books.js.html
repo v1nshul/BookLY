@@ -1,9 +1,37 @@
-const db = require('../helpers/database');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/books.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/books.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const db = require('../helpers/database');
 
 /**
  * Get a book by its ID
  * @param {number} id - The ID of the book
- * @returns {Promise<Array>} - Array containing the book object
+ * @returns {Promise&lt;Array>} - Array containing the book object
  */
 
 exports.getById = async function getById (id) {
@@ -16,7 +44,7 @@ exports.getById = async function getById (id) {
 /**
  * Get all books associated with a user
  * @param {number} userID - The ID of the user
- * @returns {Promise<Array>} - Array of books
+ * @returns {Promise&lt;Array>} - Array of books
  */
 exports.getAllByUser = async function getAllByUser(userID) {
   try {
@@ -37,7 +65,7 @@ exports.getAllByUser = async function getAllByUser(userID) {
 /**
  * Search for books by title or author
  * @param {string} query - The search query
- * @returns {Promise<Array>} - Array of matching books
+ * @returns {Promise&lt;Array>} - Array of matching books
  */
 exports.searchBooks = async function searchBooks(query) {
   try {
@@ -56,7 +84,7 @@ exports.searchBooks = async function searchBooks(query) {
  * Get a book from a user's list by title
  * @param {number} userID - The ID of the user
  * @param {string} title - The title of the book
- * @returns {Promise<Array>} - Array containing the book object (empty if no match)
+ * @returns {Promise&lt;Array>} - Array containing the book object (empty if no match)
  */
 exports.getUserBookByTitle = async function getUserBookByTitle(userID, title) {
   try {
@@ -78,7 +106,7 @@ exports.getUserBookByTitle = async function getUserBookByTitle(userID, title) {
  * @param {string} book.title - The title of the book
  * @param {string} book.author - The author of the book
  * @param {number} book.userID - The ID of the user adding the book
- * @returns {Promise<Object>} - Object with message and bookID
+ * @returns {Promise&lt;Object>} - Object with message and bookID
  * @throws {Error} - If database operation fails
  */
 
@@ -121,7 +149,7 @@ exports.add = async function add(book) {
  * @param {string} title - The title of the book
  * @param {string} author - The author of the book
  * @param {number} userID - The ID of the user
- * @returns {Promise<Object>} - Object with a message indicating success or failure
+ * @returns {Promise&lt;Object>} - Object with a message indicating success or failure
  */
 exports.delFromUserList = async function delFromUserList(title, author, userID) {
   try {
@@ -149,7 +177,7 @@ exports.delFromUserList = async function delFromUserList(title, author, userID) 
 /**
  * Delete a book from the database by its ID
  * @param {number} id - The ID of the book to delete
- * @returns {Promise<Object>} - Database response
+ * @returns {Promise&lt;Object>} - Database response
  */
 exports.delById = async function delById (id) {
   const query = "DELETE FROM books WHERE ID = ?;";
@@ -162,11 +190,33 @@ exports.delById = async function delById (id) {
  * Update book details in the database
  * @param {Object} book - The book object with updated fields
  * @param {number} book.ID - The ID of the book to update
- * @returns {Promise<Object>} - Database response
+ * @returns {Promise&lt;Object>} - Database response
  */
 exports.update = async function update (book) {
   const query = "UPDATE books SET ? WHERE ID = ?;";
   const values = [book, book.ID];
   const data = await db.run_query(query, values);
   return data;
-};
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#add">add</a></li><li><a href="global.html#addReview">addReview</a></li><li><a href="global.html#addToMyList">addToMyList</a></li><li><a href="global.html#createBook">createBook</a></li><li><a href="global.html#delById">delById</a></li><li><a href="global.html#delFromUserList">delFromUserList</a></li><li><a href="global.html#deleteBookFromList">deleteBookFromList</a></li><li><a href="global.html#getAll">getAll</a></li><li><a href="global.html#getAllByUser">getAllByUser</a></li><li><a href="global.html#getById">getById</a></li><li><a href="global.html#getReviews">getReviews</a></li><li><a href="global.html#getUserBookByTitle">getUserBookByTitle</a></li><li><a href="global.html#searchBooks">searchBooks</a></li><li><a href="global.html#update">update</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Apr 02 2025 00:32:47 GMT+0000 (GMT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

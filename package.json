@@ -16,7 +16,6 @@
     "create-react-app": "^5.1.0",
     "express": "^5.1.0",
     "js-yaml": "^4.1.0",
-    "jsdoc": "^3.6.6",
     "jsonapi-serializer": "^3.6.9",
     "jsonschema": "^1.5.0",
     "koa": "^2.16.0",
@@ -31,5 +30,8 @@
     "swagger-ui-dist": "^5.20.2",
     "swagger-ui-koa": "^0.0.1",
     "uuid": "^8.3.0"
+  },
+  "devDependencies": {
+    "jsdoc": "^4.0.4"
   }
 }

@@ -24,6 +24,7 @@ app.use(cors({
 }));
 
 app.use(serve(path.join(__dirname, 'public')));
+app.use(serve(path.join(__dirname, 'docs')));
 
 router.get('/docs/yaml', (ctx) => {
   ctx.set('Content-Type', 'text/yaml'); 
@@ -35,6 +36,9 @@ router.get('/docs/json', (ctx) => {
   ctx.body = openApiJson;
 });
 
+router.get('/docs/jsdoc/', (ctx) => {
+  ctx.redirect('/jsdoc/index.html'); // Redirect to correct path
+});
 
 router.get('/docs/', (ctx) => {
   ctx.type = 'text/html';
