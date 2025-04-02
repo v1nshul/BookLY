@@ -53,6 +53,6 @@ npm start
 - **Reviews API**: Users can review books.
 
 ## Documentation
-- **JSDoc API Docs**: `https://radiusironic-historyharlem-3000.codio-box.uk/jsdoc/`
+- **JSDoc API Docs**: `https://radiusironic-historyharlem-3000.codio-box.uk/docs/jsdoc`
 - **OpenAPI YAML**: `https://radiusironic-historyharlem-3000.codio-box.uk/docs/yaml`
 - **OpenAPI JSON**: `https://radiusironic-historyharlem-3000.codio-box.uk/docs/json`
