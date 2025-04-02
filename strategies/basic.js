@@ -13,7 +13,7 @@ const checkUserAndPass = async (username, password, done) => {
   let result;
   try {
     result = await users.findByUsername(username);
-   // console.log("Database result:", result); // 🔍 Debug: Check if user is found
+   // console.log("Database result:", result); // 
   } catch (error) {
     console.error(`Error during authentication for user ${username}`);
     return done(error);
@@ -21,7 +21,7 @@ const checkUserAndPass = async (username, password, done) => {
 
   if (result.length) {
     const user = result[0];
-   // console.log("Stored Hash:", user.password); // 🔍 Debug: Check stored hash
+   // console.log("Stored Hash:", user.password); // 
    // console.log("Entered Password:", password); 
 
     if (verifyPassword(user, password)) {

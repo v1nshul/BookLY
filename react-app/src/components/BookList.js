@@ -1,29 +1,29 @@
 // components/BookList.js
 import React, { useEffect, useState } from "react";
 
-const BookList = ({ auth }) => {
+const BookList = ({ token }) => { 
   const [books, setBooks] = useState([]);
   const [newBook, setNewBook] = useState({ title: "", author: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [reviews, setReviews] = useState({}); // Store reviews by book ID
-  const [newReview, setNewReview] = useState({ rating: "", comment: "" }); // New review form state
-  const [selectedBookId, setSelectedBookId] = useState(null); // Track which book is being reviewed
+  const [reviews, setReviews] = useState({});
+  const [newReview, setNewReview] = useState({ rating: "", comment: "" });
+  const [selectedBookId, setSelectedBookId] = useState(null);
 
   useEffect(() => {
-    if (!auth) {
-      console.error("No authentication found!");
+    if (!token) {
+      console.error("No authentication token found!");
       return;
     }
 
     fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books", {
-      headers: { Authorization: `Basic ${auth}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => setBooks(data.data || []))
       .catch((err) => console.error("Error fetching books:", err));
-  }, [auth]);
+  }, [token]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -31,7 +31,7 @@ const BookList = ({ auth }) => {
     try {
       const response = await fetch(
         `https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/search?query=${searchQuery}`,
-        { headers: { Authorization: `Basic ${auth}` } }
+        { headers: { Authorization: `Bearer ${token}` } } 
       );
       const data = await response.json();
       if (response.ok) {
@@ -58,7 +58,7 @@ const BookList = ({ auth }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Basic ${auth}`,
+          Authorization: `Bearer ${token}`, 
         },
         body: JSON.stringify({ title: book.title, author: book.author }),
       });
@@ -88,7 +88,7 @@ const BookList = ({ auth }) => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Basic ${auth}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ title, author }),
         }
@@ -109,7 +109,7 @@ const BookList = ({ auth }) => {
     try {
       const response = await fetch(
         `https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/reviews?book_id=${book_id}`,
-        { headers: { Authorization: `Basic ${auth}` } }
+        { headers: { Authorization: `Bearer ${token}` } } 
       );
       const data = await response.json();
       if (response.ok) {
@@ -129,15 +129,14 @@ const BookList = ({ auth }) => {
     }
 
     try {
-      const requestBody = { book_id, ...newReview };
-      //console.log("Request Body:", requestBody); 
+      //const requestBody = { book_id, ...newReview };
       const response = await fetch(
         "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/reviews",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Basic ${auth}`,
+            Authorization: `Bearer ${token}`, 
           },
           body: JSON.stringify({ book_id, ...newReview }),
         }
@@ -160,6 +159,7 @@ const BookList = ({ auth }) => {
       setErrorMessage("An error occurred while adding the review.");
     }
   };
+
 
   return (
     <div className="space-y-8">

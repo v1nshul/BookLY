@@ -5,6 +5,9 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
 const serve = require('koa-static');
+const passport = require('koa-passport'); 
+const { login, authenticate } = require('./controllers/auth'); 
+const authMiddleware = require('./middleware/auth');
 
 const app = new Koa();
 const router = new Router();
@@ -19,9 +22,11 @@ const openApiJson = yaml.load(openApiYaml);
 app.use(cors({
   origin: (ctx) => ctx.request.header.origin,
   credentials: true,
-  allowMethods: ['GET', 'POST', 'DELETE', 'PUT'],
+  allowMethods: ['GET', 'POST', 'DELETE', 'PUT' , 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(passport.initialize());
 
 app.use(serve(path.join(__dirname, 'public')));
 app.use(serve(path.join(__dirname, 'docs')));
@@ -37,13 +42,22 @@ router.get('/docs/json', (ctx) => {
 });
 
 router.get('/docs/jsdoc/', (ctx) => {
-  ctx.redirect('/jsdoc/index.html'); // Redirect to correct path
+  ctx.redirect('/jsdoc/index.html'); 
 });
 
 router.get('/docs/', (ctx) => {
   ctx.type = 'text/html';
   ctx.body = fs.readFileSync(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Login route to generate JWT
+router.post('/login', login);
+
+router.get('/api/protected', authMiddleware, (ctx) => {
+  ctx.body = { message: `Hello, ${ctx.state.user.username}! This is protected.` };
+});
+
+router.use('/api/home/books', authMiddleware, books.routes(), books.allowedMethods());
 
 
 app.use(router.routes()).use(router.allowedMethods());

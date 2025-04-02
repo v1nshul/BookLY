@@ -7,11 +7,38 @@ servers:
   - url: https://radiusironic-historyharlem-3000.codio-box.uk
     description: Production server
 paths:
+  /login:
+    post:
+      summary: Authenticate user and issue JWT token
+      tags:
+        - Authentication
+      security:
+        - BasicAuth: [] 
+      responses:
+        '200':
+          description: Successful login, returns JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/home/books:
     get:
       summary: Get all books for the authenticated user
       tags:
         - Books
+      security:
+        - BearerAuth: [] # Requires JWT
       responses:
         '200':
           description: List of books retrieved successfully
@@ -24,6 +51,12 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Book'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Server error
           content:
@@ -34,6 +67,8 @@ paths:
       summary: Add a new book to the database
       tags:
         - Books
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -52,6 +87,12 @@ paths:
                     type: string
                   bookID:
                     type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Server error
           content:
@@ -63,6 +104,8 @@ paths:
       summary: Search books by title or author
       tags:
         - Books
+      security:
+        - BearerAuth: []
       parameters:
         - in: query
           name: query
@@ -88,6 +131,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Server error
           content:
@@ -99,6 +148,8 @@ paths:
       summary: Add a book to the user's list
       tags:
         - Books
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -131,6 +182,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           description: Book already in user's list
           content:
@@ -148,6 +205,8 @@ paths:
       summary: Remove a book from the user's list
       tags:
         - Books
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -178,6 +237,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Book not found
           content:
@@ -195,6 +260,8 @@ paths:
       summary: Add a review for a book
       tags:
         - Reviews
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -219,6 +286,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Server error
           content:
@@ -229,6 +302,8 @@ paths:
       summary: Get reviews for a specific book
       tags:
         - Reviews
+      security:
+        - BearerAuth: []
       parameters:
         - in: query
           name: book_id
@@ -254,6 +329,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/home/private:
+    get:
+      summary: Get private user information
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User info retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/home/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+              required:
+                - username
+                - password
+                - email
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
         '500':
           description: Server error
           content:
@@ -265,6 +413,10 @@ components:
     BasicAuth:
       type: http
       scheme: basic
+    BearerAuth: 
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Book:
       type: object
@@ -301,7 +453,6 @@ components:
       required:
         - title
         - author
-        - userID
     Review:
       type: object
       properties:
@@ -347,5 +498,5 @@ components:
           type: string
       required:
         - error
-security:
-  - BasicAuth: []
+security: 
+  - {}

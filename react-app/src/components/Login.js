@@ -10,33 +10,38 @@ const Login = ({ onLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const credentials = btoa(`${username}:${password}`);
 
     try {
-      const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/api/home/private", {
-        method: "GET",
+      const response = await fetch("https://radiusironic-historyharlem-3000.codio-box.uk/login", {
+        method: "POST",
         headers: {
-          Authorization: `Basic ${credentials}`,
           "Content-Type": "application/json",
+          Authorization: `Basic ${btoa(`${username}:${password}`)}`, 
         },
         credentials: "include",
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        await response.json();
-        sessionStorage.setItem("auth", credentials);
+        sessionStorage.setItem("token", data.token); 
+        sessionStorage.setItem("username", username); 
 
         const booksResponse = await fetch(
           "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books",
-          { headers: { Authorization: `Basic ${credentials}` } }
+          {
+            headers: {
+              Authorization: `Bearer ${data.token}`, 
+            },
+          }
         );
 
         const booksData = await booksResponse.json();
 
-        onLogin({ username, auth: credentials, books: booksData.data });
+        onLogin({ username, token: data.token, books: booksData.data });
         navigate("/books");
       } else {
-        setError("Invalid username or password");
+        setError(data.error || "Invalid username or password");
       }
     } catch (error) {
       console.error("Login error:", error);

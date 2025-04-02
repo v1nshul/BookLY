@@ -21,21 +21,21 @@ const App = () => {
   }, [darkMode]);
 
   useEffect(() => {
-    const storedAuth = sessionStorage.getItem("auth");
+    const storedToken = sessionStorage.getItem("token");
     const storedUsername = sessionStorage.getItem("username");
-    if (storedAuth && storedUsername) {
-      setUser({ username: storedUsername, auth: storedAuth });
+    if (storedToken && storedUsername) {
+      setUser({ username: storedUsername, token: storedToken });
     }
   }, []);
 
   const handleLogin = (userData) => {
-    sessionStorage.setItem("auth", userData.auth);
+    sessionStorage.setItem("token", userData.token); 
     sessionStorage.setItem("username", userData.username);
     setUser(userData);
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("auth");
+    sessionStorage.removeItem("token");
     sessionStorage.removeItem("username");
     setUser(null);
   };
@@ -68,7 +68,7 @@ const App = () => {
                 </Button>
               </div>
               <Routes>
-                <Route path="/books" element={<BookList auth={user.auth} />} />
+                <Route path="/books" element={<BookList token={user.token} />} />
                 <Route path="*" element={<Navigate to="/books" />} />
               </Routes>
             </div>
