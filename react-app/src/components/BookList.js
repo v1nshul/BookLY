@@ -129,6 +129,8 @@ const BookList = ({ auth }) => {
     }
 
     try {
+      const requestBody = { book_id, ...newReview };
+      //console.log("Request Body:", requestBody); 
       const response = await fetch(
         "https://radiusironic-historyharlem-3000.codio-box.uk/api/home/books/reviews",
         {
