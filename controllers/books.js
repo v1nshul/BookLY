@@ -1,10 +1,10 @@
-// controllers/books.js
+
 const booksModel = require("../models/books");
 const reviewsModel = require("../models/reviews");
 
 async function getAll(ctx) {
   try {
-    const userID = ctx.state.user.ID; // Get userID from authentication
+    const userID = ctx.state.user.ID; 
     console.log("Fetching books for user ID:", userID);
 
     const books = await booksModel.getAllByUser(userID);
@@ -21,7 +21,7 @@ async function getAll(ctx) {
 
 async function createBook(ctx) {
   const book = ctx.request.body;
-  book.userID = ctx.state.user.ID; // Store userID from authentication
+  book.userID = ctx.state.user.ID;
 
   try {
     const result = await booksModel.add(book);
@@ -70,7 +70,7 @@ async function addToMyList(ctx) {
     const existingBooks = await booksModel.getUserBookByTitle(userID, title);
 
     if (existingBooks.length > 0) {
-      ctx.status = 409; // 409 Conflict
+      ctx.status = 409; 
       ctx.body = { error: "Book already exists in your list" };
       return;
     }
@@ -117,7 +117,7 @@ async function deleteBookFromList(ctx) {
 
 async function addReview(ctx) {
   const { book_id, rating, comment } = ctx.request.body;
-  const user_id = ctx.state.user.ID; // Get user ID from auth middleware
+  const user_id = ctx.state.user.ID; 
 
   if (!book_id || !rating) {
     ctx.status = 400;

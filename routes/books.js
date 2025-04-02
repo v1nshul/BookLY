@@ -1,4 +1,4 @@
-// routes/books.js
+
 const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
 const router = Router({ prefix: "/api/home/books" });
