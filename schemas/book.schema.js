@@ -30,9 +30,9 @@ module.exports = {
       "description": "Is the book published or not",
       "type": "boolean"
     },
-    "authorID": {
-      "description": "ID of the book's author",
-      "type": "integer",
+    "author": {
+      "description": "the book's author",
+      "type": "string",
       "minimum": 0
     },
     "datePublished": {
@@ -41,5 +41,5 @@ module.exports = {
       "format": "date"
     }
   },
-  "required": ["title", "description", "authorID"]
+  "required": ["title", "description", "author"]
 }
