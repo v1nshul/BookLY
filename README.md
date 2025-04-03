@@ -28,7 +28,7 @@ This is a Books List API that allows users to manage their book collection. The 
 ## Running the Servers
 ### Start the Backend Server
 ```sh
-node index.js
+node app.js
 ```
 
 ### Start the Frontend Server
