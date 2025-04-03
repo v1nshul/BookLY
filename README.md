@@ -44,7 +44,7 @@ npm start
    ```
 2. Run tests:
    ```sh
-   npm test
+   npm test -- __tests__/userRoutes.js --detectOpenHandles
    ```
 
 ## API Endpoints
